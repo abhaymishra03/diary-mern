@@ -6,7 +6,8 @@ const router= express.Router();
 
 
 router.post("/register",()=>{
-    console.log("hsjcl");
+    
+    
     
 });
 
