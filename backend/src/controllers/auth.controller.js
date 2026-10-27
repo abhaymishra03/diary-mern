@@ -34,8 +34,8 @@ const register = async (req,res) => {
     }); 
     await user.save();
 
-    const accessToken = jwt.sign({id: user._id}, process.env.JWT_SECRET, {expiresIn: "10m"});
-    const refreshToken = jwt.sign({id: user._id}, process.env.JWT_SECRET, {expiresIn: "7d"});
+    const accessToken = jwt.sign({id: user._id},JWT_SECRET, {expiresIn: "10m"});
+    const refreshToken = jwt.sign({id: user._id},JWT_SECRET, {expiresIn: "7d"});
     
 
     res.cookie("refreshToken", refreshToken, {
@@ -58,5 +58,41 @@ const register = async (req,res) => {
     
 }
 
+const login = async (req,res) => {
+    const {email,password} = req.body || {};
 
-module.exports={register};
+    if(typeof email !== "string" || !email.trim() || typeof password !== "string" || !password) {
+        return res.status(400).json({
+            message : "All fields are required !",
+        })
+    }
+
+    const user = await User.findOne({email: email.trim().toLowerCase()});
+
+    if(!user || !await bcrypt.compare(password, user.password)) {
+        return res.status(401).json({
+            message : "Invalid email or password !",
+        })
+    }
+
+    const accessToken = jwt.sign({id: user._id},JWT_SECRET, {expiresIn: "10m"});
+    const refreshToken = jwt.sign({id: user._id},JWT_SECRET, {expiresIn: "7d"});
+
+    res.cookie("refreshToken", refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    return res.status(200).json({
+        message : "User logged in successfully !",
+        user : {
+            username : user.username,
+            email : user.email,
+            accessToken : accessToken,
+        }
+    });
+}
+
+module.exports={register, login };

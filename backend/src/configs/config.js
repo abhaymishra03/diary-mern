@@ -24,4 +24,5 @@ if(!JWT_SECRET){
 module.exports={
     PORT,
     MONGO_URI,
+    JWT_SECRET,
 }
