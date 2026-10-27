@@ -13,6 +13,12 @@ if(!MONGO_URI){
     
 }
 
+const JWT_SECRET = process.env.JWT_SECRET;
+
+if(!JWT_SECRET){
+    throw new Error("JWT_SECRET does not found in .env file");
+}
+
 
 
 module.exports={

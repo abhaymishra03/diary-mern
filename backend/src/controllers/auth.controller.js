@@ -1,4 +1,7 @@
-const User = require('../models/user.model');
+const {User} = require('../models/user.model');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const {JWT_SECRET} = require("../configs/config")
 
 const register = async (req,res) => {
 
@@ -11,22 +14,15 @@ const register = async (req,res) => {
         })
     }
 
-    User.findOne({email: email}).then((user) => {
-        if(user) {
-            return res.status(400).json({
+
+    if(await User.findOne({email: email}) || await User.findOne({username: username})) {
+         return res.status(400).json({
                 message : "User already exists !",
-            })
-        }
+    })
 
-    });
+}
 
-    User.findOne({username: username}).then((user) => {
-        if(user) {
-            return res.status(400).json({
-                message : "Username already exists !",
-            })
-        }
-    });
+    
 
 
     const hash = await bcrypt.hash(password,10);
@@ -36,6 +32,8 @@ const register = async (req,res) => {
         email : email,
         password : hash
     }); 
+    await user.save();
+
     const accessToken = jwt.sign({id: user._id}, process.env.JWT_SECRET, {expiresIn: "10m"});
     const refreshToken = jwt.sign({id: user._id}, process.env.JWT_SECRET, {expiresIn: "7d"});
     
