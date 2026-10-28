@@ -106,4 +106,32 @@ const logout = (req, res) => {
         message: "User logged out successfully !",
     });
 }
-module.exports={register, login, logout};
+const refreshToken = (req, res) => {
+    const refreshToken = req.cookies.refreshToken;
+
+    if (!refreshToken) {
+        return res.status(401).json({
+            message: "Refresh token not found !",
+        });
+    }
+
+    try {
+        const decoded = jwt.verify(refreshToken, JWT_SECRET);
+        const accessToken = jwt.sign({ id: decoded.id }, JWT_SECRET, { expiresIn: "10m" });     
+
+        return res.status(200).json({
+            message: "Access token refreshed successfully !",
+            accessToken: accessToken,
+        });
+    }
+    catch (error) {
+        return res.status(403).json({
+            message: "Invalid refresh token !",
+        });
+    }    
+    
+}
+
+
+
+module.exports={register, login, logout, refreshToken};
