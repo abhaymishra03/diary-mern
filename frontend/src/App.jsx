@@ -4,15 +4,44 @@ import './App.css'
 const emptyAuthForm = { username: '', email: '', password: '' }
 const emptyDiaryForm = { title: '', content: '' }
 
+const safeStorage = {
+  getItem(key) {
+    try {
+      if (typeof window === 'undefined') return null
+      return window.localStorage.getItem(key)
+    } catch {
+      return null
+    }
+  },
+  setItem(key, value) {
+    try {
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem(key, value)
+      }
+    } catch {
+      // Ignore storage restrictions in private browsing or blocked contexts.
+    }
+  },
+  removeItem(key) {
+    try {
+      if (typeof window !== 'undefined') {
+        window.localStorage.removeItem(key)
+      }
+    } catch {
+      // Ignore storage restrictions in private browsing or blocked contexts.
+    }
+  },
+}
+
 function App() {
   const [isLogin, setIsLogin] = useState(true)
   const [authForm, setAuthForm] = useState(emptyAuthForm)
   const [diaryForm, setDiaryForm] = useState(emptyDiaryForm)
   const [user, setUser] = useState(() => {
-    const savedUser = localStorage.getItem('diaryUser')
+    const savedUser = safeStorage.getItem('diaryUser')
     return savedUser ? JSON.parse(savedUser) : null
   })
-  const [token, setToken] = useState(() => localStorage.getItem('diaryToken') || '')
+  const [token, setToken] = useState(() => safeStorage.getItem('diaryToken') || '')
   const [diaries, setDiaries] = useState([])
   const [loading, setLoading] = useState(false)
   const [diaryLoading, setDiaryLoading] = useState(false)
@@ -21,13 +50,13 @@ function App() {
 
   useEffect(() => {
     if (!user || !token) {
-      localStorage.removeItem('diaryUser')
-      localStorage.removeItem('diaryToken')
+      safeStorage.removeItem('diaryUser')
+      safeStorage.removeItem('diaryToken')
       return
     }
 
-    localStorage.setItem('diaryUser', JSON.stringify(user))
-    localStorage.setItem('diaryToken', token)
+    safeStorage.setItem('diaryUser', JSON.stringify(user))
+    safeStorage.setItem('diaryToken', token)
   }, [user, token])
 
   useEffect(() => {
