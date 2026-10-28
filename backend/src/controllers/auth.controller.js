@@ -2,7 +2,7 @@ const {User} = require('../models/user.model');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const {JWT_SECRET} = require("../configs/config")
-// hello
+
 
 const register = async (req,res) => {
 
@@ -96,4 +96,14 @@ const login = async (req,res) => {
     });
 }
 
-module.exports={register, login };
+const logout = (req, res) => {
+    res.clearCookie("refreshToken", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+    });
+    return res.status(200).json({
+        message: "User logged out successfully !",
+    });
+}
+module.exports={register, login, logout };
